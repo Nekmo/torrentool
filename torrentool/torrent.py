@@ -5,7 +5,7 @@ from hashlib import sha1
 from os import walk, sep
 from os.path import join, getsize, normpath
 from pathlib import Path
-from typing import List, Union, Optional, Tuple, NamedTuple
+from typing import List, Union, Optional, Tuple, NamedTuple, Iterable
 from urllib.parse import urlencode
 
 from .bencode import Bencode
@@ -311,7 +311,8 @@ class Torrent:
         return Bencode.encode(self._struct)
 
     @classmethod
-    def _get_target_files_info(cls, src_path: Path) -> Tuple[List[Tuple[str, int, List[str]]], int]:
+    def _get_target_files_info(cls, src_path: Path, extensions: Iterable[str] = ()) \
+            -> Tuple[List[Tuple[str, int, List[str]]], int]:
         is_dir = src_path.is_dir()
 
         src_path = f'{src_path}'  # Force walk() to return unicode names.
@@ -330,7 +331,7 @@ class Torrent:
         for fpath in target_files:
             file_size = getsize(fpath)
 
-            if not file_size:
+            if not file_size or not any(fpath.endswith(ext.lstrip(".")) for ext in extensions):
                 continue
 
             target_files_.append((fpath, file_size, normpath(fpath.replace(src_path, '')).strip(sep).split(sep)))
@@ -339,7 +340,7 @@ class Torrent:
         return target_files_, total_size
 
     @classmethod
-    def create_from(cls, src_path: Union[str, Path]) -> 'Torrent':
+    def create_from(cls, src_path: Union[str, Path], extensions: Iterable[str] = ()) -> 'Torrent':
         """Returns Torrent object created from a file or a directory.
 
         :param src_path:
@@ -348,7 +349,7 @@ class Torrent:
         if isinstance(src_path, str):
             src_path = Path(src_path)
 
-        target_files, size_data = cls._get_target_files_info(src_path)
+        target_files, size_data = cls._get_target_files_info(src_path, extensions)
 
         size_min = 32768  # 32 KiB
         size_default = 262144  # 256 KiB

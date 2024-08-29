@@ -46,7 +46,8 @@ def info(torrent_path):
 @click.option('--open_trackers', default=False, is_flag=True, help='Add open trackers announce URLs.')
 @click.option('--comment', default=None, help='Arbitrary comment.')
 @click.option('--cache', default=False, is_flag=True, help='Upload file to torrent cache services.')
-def create(source, dest, tracker, open_trackers, comment, cache):
+@click.option('--filter-extension', multiple=True, type=str, help='Filter files to upload by an extension file.')
+def create(source, dest, tracker, open_trackers, comment, cache, filter_extension):
     """Create torrent file from a single file or a directory."""
 
     source_title = path.basename(source).replace('.', '_').replace(' ', '_')
@@ -54,7 +55,7 @@ def create(source, dest, tracker, open_trackers, comment, cache):
 
     click.secho(f'Creating torrent from {source} ...')
 
-    my_torrent = Torrent.create_from(source)
+    my_torrent = Torrent.create_from(source, filter_extension)
 
     if comment:
         my_torrent.comment = comment
