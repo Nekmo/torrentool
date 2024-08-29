@@ -331,7 +331,7 @@ class Torrent:
         for fpath in target_files:
             file_size = getsize(fpath)
 
-            if not file_size or not any(fpath.endswith(ext.lstrip(".")) for ext in extensions):
+            if not file_size or not any(fpath.endswith("." + ext.lstrip(".")) for ext in extensions):
                 continue
 
             target_files_.append((fpath, file_size, normpath(fpath.replace(src_path, '')).strip(sep).split(sep)))
